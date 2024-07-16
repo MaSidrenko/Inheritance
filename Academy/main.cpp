@@ -1,5 +1,7 @@
 #include<iostream>
-#include<string>
+#include<string>	//Объявлен класс std::string
+#include<string.h>	//Объявленны ф-ции для работы с NULL Termenated Line
+#include<fstream>
 
 using std::cout;
 using std::cin;
@@ -12,6 +14,10 @@ using std::endl;
 
 class Human
 {
+	static const int TYPE_WIDTH = 12;
+	static const int LAST_NAME_WIDTH = 15;
+	static const int FIRST_NAME_WIDTH = 15;
+	static const int AGE_WIDTH = 5;
 	std::string last_name;
 	std::string first_name;
 	int age;
@@ -55,14 +61,35 @@ public:
 	//		Methods:
 	virtual std::ostream& print(std::ostream& os)const
 	{
+		//os << strchr(typeid(*this).name(), ' ') + 1 << ":\t";
 		return os << last_name << " " << first_name << " " << age;
 	}
-
+	virtual std::ofstream& print(std::ofstream& ofs)const
+	{
+		ofs.width(TYPE_WIDTH);	//Метод width() задает ширину вывода
+						//При первом вызове метод width() включает выравнивание по правому краю.
+		ofs << std::left;	//Возвращаем выравнивание по левому краю
+						//Один вызво width() влияет только на одно выводимое значение
+		ofs << std::string(strchr(typeid(*this).name(), ' ') + 1) + ":";
+		
+		ofs.width(LAST_NAME_WIDTH);
+		ofs << last_name;
+		ofs.width(FIRST_NAME_WIDTH);
+		ofs << first_name;
+		ofs.width(AGE_WIDTH);
+		ofs << age;
+		return ofs;
+	}
 };
-std::ostream& operator<<(std::ostream& os, const Human& obj)
+std::ostream& operator<<(std::ostream& os, const Human& obj) 
 {
 	return obj.print(os);
 }
+std::ofstream& operator<<(std::ofstream& ofs, const Human& obj)
+{
+	return obj.print(ofs);
+}
+
 
 void Print(Human* group[], const int n)
 {
@@ -75,6 +102,18 @@ void Print(Human* group[], const int n)
 		cout << delimiter << endl;
 
 	}
+}
+void Write_To_File(Human* group[], const int n, std::string file_name)
+{
+	std::ofstream fout;
+	fout.open(file_name);
+	for (int i = 0; i < n; i++)
+	{
+		fout << group[i] << endl;
+	}
+	fout.close();
+	//std::string('')+
+
 }
 void Clear(Human* group[], const int n)
 {
@@ -90,6 +129,10 @@ void Clear(Human* group[], const int n)
 
 class Student : public Human
 {
+	const static int SPECIALITY_WIDHT = 25;
+	const static int GROUP_WIDHT = 8;
+	const static int RATING_WIDHT = 8;
+	const static int ATTENDANCE_WIDHT = 8;
 	std::string speciality;
 	std::string group;
 	double rating;
@@ -152,6 +195,19 @@ public:
 	std::ostream& print(std::ostream& os)const override
 	{
 		return Human::print(os) << " " << speciality << " " << group << " " << rating << " " << attendance;
+	}	
+	std::ofstream& print(std::ofstream& ofs)const override
+	{
+		Human::print(ofs);
+		ofs.width(SPECIALITY_WIDHT);
+		ofs << speciality;
+		ofs.width(GROUP_WIDHT);
+		ofs << group; 
+		ofs.width(RATING_WIDHT);
+		ofs << rating;
+		ofs.width(ATTENDANCE_WIDHT);
+		ofs << attendance;
+		return ofs;
 	}
 };
 
@@ -160,6 +216,8 @@ public:
 
 class Teacher : public Human
 {
+	const static int SPECIALITY_WIDHT = 25;
+	const static int EXPERIENCE_WIDHT = 5;
 	std::string speciality;
 	int experience;
 public:
@@ -195,6 +253,15 @@ public:
 	{
 		return  Human::print(os) << " " << speciality << " " << experience;
 	}
+	std::ofstream& print(std::ofstream& ofs)const override
+	{
+		Human::print(ofs);
+		ofs.width(SPECIALITY_WIDHT);
+		ofs << speciality; 
+		ofs.width(EXPERIENCE_WIDHT);
+		ofs << experience;
+		return ofs;
+	}
 };
 
 #define GRADUATE_TAKE_PARAMETERS const std::string& subject
@@ -202,6 +269,7 @@ public:
 
 class Graduate : public Student
 {
+	static const int SUBJECT_WIDHT = 30;
 	std::string subject;
 public:
 	const std::string& get_subject()const
@@ -232,6 +300,13 @@ public:
 	std::ostream& print(std::ostream& os)const override
 	{
 	return Student::print(os) << " " << subject;
+	}
+	std::ofstream& print(std::ofstream& ofs)const override
+	{
+		Student::print(ofs);
+		ofs.width(SUBJECT_WIDHT);
+		ofs << subject;
+		return ofs;
 	}
 
 };
@@ -287,6 +362,18 @@ void main()
 		new Student("Vercetti", "Tommy", 30, "Theft", "Vice", 95, 98),
 		new Teacher("Diaz", "Ricardo", 50, "Weapon distribution", 20)
 	};
-	Print(group, sizeof(group) / sizeof(group[0]));
+
+	//Print(group, sizeof(group) / sizeof(group[0]));
+	std::ofstream fout;
+	fout.open("Group.txt");//std::ios_base::app);
+	//fout << "Hello Group!" << endl;
+	//fout << delimiter;
+	for (int i = 0; i < sizeof(group) / sizeof(group[0]); i++)
+	{
+		fout << *group[i] << endl;;
+		//fout << delimiter;
+	}
+	fout.close();
+	system("notepad Group.txt");
 	Clear(group, sizeof(group) / sizeof(group[0]));
 }
