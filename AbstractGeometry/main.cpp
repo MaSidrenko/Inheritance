@@ -155,7 +155,117 @@ namespace Geometry
 			Shape::info();
 		}
 	};
+
+	class Triangle : public Shape
+	{
+		//Стороны треугольника:
+		double side_a;
+		double side_b;
+		double side_c;
+	public:
+		Triangle(double side_a, double side_b, double side_c, Color color) : Shape(color)
+		{
+			set_side_a(side_a);
+			set_side_b(side_b);
+			set_side_c(side_c);
+		}
+		~Triangle() {};
+		void set_side_a(double side_a)
+		{
+			this->side_a = side_a;
+		}
+		void set_side_b(double side_b)
+		{
+			this->side_b = side_b;
+		}
+		void set_side_c(double side_c)
+		{
+			this->side_c = side_c;
+		}
+		double get_side_a()const
+		{
+			return side_a;
+		}
+		double get_side_b()const
+		{
+			return side_b;
+		}
+		double get_side_c()const
+		{
+			return side_c;
+		}
+		double get_area()const override
+		{
+			return sqrt((get_perimeter() / 2) * ((get_perimeter() / 2) - side_a) * ((get_perimeter() / 2) - side_b) * ((get_perimeter() / 2) - side_c));
+		}
+		double get_perimeter()const override
+		{
+			return side_a + side_b + side_c;
+		}
+		void draw()const override
+		{
+			for (int i = 0; i < get_perimeter(); i++)
+			{
+				for (int j = i; j < get_perimeter(); j++)
+				{
+					cout << " ";
+				}
+				for (int j = 0; j < i; j++)
+				{
+				HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+				SetConsoleTextAttribute(hConsole, color);
+					cout << "* ";
+				SetConsoleTextAttribute(hConsole, Color::CONSOLE_DEFAULT);
+				}
+				cout << endl;
+			}
+		}
+		void info()const override
+		{
+			cout << typeid(*this).name() << endl;
+			cout << "Длинна стороны a: " << get_side_a() << endl;
+			cout << "Длинна стороны b: " << get_side_b() << endl;
+			cout << "Длинна стороны c: " << get_side_c() << endl;
+			Shape::info();
+		}
+	};
+	class Cricle : public Shape
+	{
+		double radius;
+	public:
+		Cricle(double radius, Color color) : Shape(color)
+		{
+			set_radius(radius);
+		}
+		void set_radius(int radius)
+		{
+			this->radius = radius;
+		}
+		double get_radius()
+		{
+			return radius;
+		}
+		double get_area()const override
+		{
+			return 3.14 * (radius * radius);
+		}
+		double get_perimeter()const override
+		{
+			return 2 * 3.14 * radius;
+		}
+		void draw()const override
+		{
+	
+		}
+		void info()const override
+		{
+
+		}
+
+	};
 }
+
+
 
 void main()
 {
@@ -169,4 +279,11 @@ void main()
 	cout << delimiter << endl;
 	Geometry::Rectangle rect(100, 50, Geometry::Color::CONSOLE_BLUE);
 	rect.info();
+	cout << delimiter << endl;
+	Geometry::Triangle triangle(5, 5, 10, Geometry::Color::CONSOLE_GREEN);
+	triangle.info();
+	cout << delimiter << endl;
+	Geometry::Cricle circle(5, Geometry::Color::CONSOLE_BLUE);
+	circle.draw();
+
 }
