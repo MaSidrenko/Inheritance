@@ -241,75 +241,13 @@ namespace Geometry
 	};
 	class Triangle : public Shape
 	{
-		//Стороны треугольника:
-		double side_a;
-		double side_b;
-		double side_c;
 	public:
-		Triangle(double side_a, double side_b, double side_c, SHAPE_TAKE_PARAMETERS) : Shape(SHAPE_GIVE_PARAMETERS)
-		{
-			set_side_a(side_a);
-			set_side_b(side_b);
-			set_side_c(side_c);
-		}
-		~Triangle() {};
-		void set_side_a(double side_a)
-		{
-			this->side_a = side_a;
-		}
-		void set_side_b(double side_b)
-		{
-			this->side_b = side_b;
-		}
-		void set_side_c(double side_c)
-		{
-			this->side_c = side_c;
-		}
-		double get_side_a()const
-		{
-			return side_a;
-		}
-		double get_side_b()const
-		{
-			return side_b;
-		}
-		double get_side_c()const
-		{
-			return side_c;
-		}
-		double get_area()const override
-		{
-			double p = get_perimeter() / 2;
-			return sqrt(p * (p - side_a) * (p - side_b) * (p - side_c));
-		}
-		double get_perimeter()const override
-		{
-			return side_a + side_b + side_c;
-		}
-		void draw()const override
-		{
-			for (int i = 0; i < get_perimeter(); i++)
-			{
-				for (int j = i; j < get_perimeter(); j++)
-				{
-					cout << " ";
-				}
-				for (int j = 0; j < i; j++)
-				{
-					HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-					SetConsoleTextAttribute(hConsole, color);
-					cout << "* ";
-					SetConsoleTextAttribute(hConsole, Color::CONSOLE_DEFAULT);
-				}
-				cout << endl;
-			}
-		}
+		Triangle(SHAPE_TAKE_PARAMETERS): Shape(SHAPE_GIVE_PARAMETERS) {}
+		~Triangle() {}
+		virtual double get_heigth()const = 0;
 		void info()const override
 		{
-			cout << typeid(*this).name() << endl;
-			cout << "Длинна стороны a: " << get_side_a() << endl;
-			cout << "Длинна стороны b: " << get_side_b() << endl;
-			cout << "Длинна стороны c: " << get_side_c() << endl;
+			cout << "Высота треугольника: " << get_heigth() << endl;
 			Shape::info();
 		}
 	};
@@ -388,7 +326,7 @@ void main()
 	Geometry::Rectangle rect(10000, 5000, 5000, 100, 100, Geometry::Color::BLUE);
 	rect.info();
 	cout << delimiter << endl;
-	//Geometry::Triangle triangle(5, 5, 5, Geometry::Color::CONSOLE_GREEN);
+	//Geometry::Triangle triangle(5, 5, 5, Geometry::Color::GREEN);
 	//triangle.info();
 	cout << delimiter << endl;
 	Geometry::Cricle disk(3600, 500, 100, 5, Geometry::Color::YELLOW);
