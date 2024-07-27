@@ -15,8 +15,10 @@ namespace Geometry
 	{
 		RED = 0x000000FF,
 		GREEN = 0x0000FF00,
+		DARK_GREEN = 0x0000AA00,
 		BLUE = 0x00FF0000,
-		YELLOW = 0x000055FF,
+		YELLOW = 0x000000FF,
+		ORANGE = 0x000055FF,
 		CONSOLE_RED = 0xCC, //Страшая 'C' - цвет фона, младшая 'C' - цвет текста.
 		CONSOLE_GREEN = 0xAA,
 		CONSOLE_BLUE = 0x99,
@@ -79,13 +81,19 @@ namespace Geometry
 		{
 			//if (start_x < 100)start_x = 100;
 			//if (start_x > 1000)start_x = 1000;
-			this->start_x = start_x < MIN_START_X ? MIN_START_X : start_x > MAX_START_X ? MAX_START_X : start_x;
+			this->start_x = 
+				start_x < MIN_START_X ? MIN_START_X : 
+				start_x > MAX_START_X ? MAX_START_X : 
+				start_x;
 		}
 		void set_start_y(unsigned int start_y)
 		{
 			//if (start_y < 50)start_y = 50;
 			//if (start_y > 500)start_y = 500;
-			this->start_y = start_y < MIN_START_Y ? MIN_START_Y : start_y > MAX_START_Y ? MAX_START_Y : start_y;
+			this->start_y = 
+				start_y < MIN_START_Y ? MIN_START_Y :
+				start_y > MAX_START_Y ? MAX_START_Y : 
+				start_y;
 		}
 		void set_line_width(unsigned int line_width)
 		{
@@ -254,90 +262,139 @@ namespace Geometry
 	};
 	class EquilateralTriangle : public Triangle
 	{
-		double side_a;
+		double side;
 	public:
-		EquilateralTriangle(double side_a, SHAPE_TAKE_PARAMETERS) : Triangle(SHAPE_GIVE_PARAMETERS)
+		EquilateralTriangle(double side, SHAPE_TAKE_PARAMETERS) : Triangle(SHAPE_GIVE_PARAMETERS)
 		{
-			set_side_a(side_a);
+			set_side(side);
 		}
 		~EquilateralTriangle() {}
-		void set_side_a(double side_a)
+		void set_side(double side_a)
 		{
-			this->side_a = side_a;
+			this->side = filter_size(side_a);
 		}
-		double get_side_a()
+		double get_side()
 		{
-			return side_a;
+			return side;
 		}
 		double get_heigth_triangle()const override
 		{
-			return (side_a * sqrt(3)) / 2;
+			return sqrt(pow(side, 2) - (pow(side / 2, 2)));
+			//return sqrt((side * side) - ((side * side) / 4));
+			//return (side * sqrt(3)) / 2;
 		}
 		double get_area()const override
 		{
-			return 0.5 * side_a * get_heigth_triangle();
+			return 0.5 * side * get_heigth_triangle();
 		}
 		double get_perimeter()const override
 		{
-			return 3 * side_a;
+			return 3 * side;
 		}
 		void draw()const override 
-		{}
+		{
+			HWND hwnd = FindWindow(NULL, L"Inheritance - Microsoft Visual Studio");
+			HDC hdc = GetDC(hwnd);
+
+			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
+			HBRUSH hBrush = CreateSolidBrush(color);
+
+			SelectObject(hdc, hPen);
+			SelectObject(hdc, hBrush);
+
+			POINT vertices[] =
+			{
+				{start_x, start_y + side},
+				{start_x + side, start_y + side},
+				{start_x + side / 2, start_y + side - get_heigth_triangle()}
+			};
+
+			::Polygon(hdc, vertices, 3);
+
+			DeleteObject(hPen);
+			DeleteObject(hBrush);
+
+			ReleaseDC(hwnd, hdc);
+		}
 		void info()const override
 		{
 			cout << typeid(*this).name() << endl;
-			cout << "Длинна сторон равностороннего треугольника: " << side_a << endl;
+			cout << "Длинна сторон равностороннего треугольника: " << side << endl;
 			Triangle::info();
 		}
 	};
-	class IsoscalesTriangle : public Triangle
+	class IsoscelesTriangle : public Triangle
 	{
-		double side_a;
-		double side_b;
+		double base;
+		double side;
 	public:
-		IsoscalesTriangle(double side_a, double side_b, SHAPE_TAKE_PARAMETERS) : Triangle(SHAPE_GIVE_PARAMETERS)
+		IsoscelesTriangle(double base, double side, SHAPE_TAKE_PARAMETERS) : Triangle(SHAPE_GIVE_PARAMETERS)
 		{
-			set_side_a(side_a);
-			set_side_b(side_b);
+			set_base(base);
+			set_side(side);
 		}
-		~IsoscalesTriangle() {}
-		void set_side_a(double side_a)
+		~IsoscelesTriangle() {}
+		void set_base(double base)
 		{
-			this->side_a = side_a;
+			this->base = filter_size(base);
 		}
-		void set_side_b(double side_b)
+		void set_side(double side)
 		{
-			this->side_b = side_b;
+			this->side = filter_size(side);
+			if (this->side <= base / 2)this->side = base * 3 / 5;
 		}
 		double get_side_a()
 		{
-			return side_a;
+			return base;
 		}
 		double get_side_b()
 		{
-			return side_b;
+			return side;
 		}
 		double get_heigth_triangle()const override
 		{
-			return sqrt((side_a * side_a) - (side_b * side_b) / 4);
+			return sqrt(pow(side, 2) - pow(base / 2, 2));
+			//return sqrt((side_a * side_a) - (side_b * side_b) / 4);
 		}
 		double get_area()const override
 		{
-			return 0.5 * side_b * get_heigth_triangle();
+			return 0.5 * base * get_heigth_triangle();
 		}
 		double get_perimeter()const override
 		{
-			return 2 * side_a + side_b;
+			return 2 * base + side;
 		}
 		void draw()const override
 		{
+			HWND hwnd = FindWindow(NULL, L"Inheritance - Microsoft Visual Studio");
+			HDC hdc = GetDC(hwnd);
 
+			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
+			HBRUSH hBrush = CreateSolidBrush(color);
+
+			SelectObject(hdc, hPen);
+			SelectObject(hdc, hBrush);
+			
+			POINT vertices[] =
+			{
+				{start_x, start_y + side},
+				{start_x + base, start_y + side},
+				{start_x + base / 2, start_y + side - get_heigth_triangle()}
+			};
+
+			::Polygon(hdc, vertices, 3);
+
+			DeleteObject(hBrush);
+			DeleteObject(hPen);
+
+			ReleaseDC(hwnd, hdc);
+		
 		}
 		void info()const override
 		{
 			cout << typeid(*this).name() << endl;
-			cout << "Длинна равных сторон равнобедреннго треугольника: " << side_a << endl;
-			cout << "Длинна основания равнобедренного теругольника: " << side_b << endl;
+			cout << "Длинна равных сторон равнобедреннго треугольника: " << side << endl;
+			cout << "Длинна основания равнобедренного теругольника: " << base << endl;
 			Triangle::info();
 		}
 	};
@@ -456,14 +513,14 @@ void main()
 	//Geometry::Triangle triangle(5, 5, 5, Geometry::Color::GREEN);
 	//triangle.info();
 	cout << delimiter << endl;
-	Geometry::Cricle disk(3600, 500, 100, 5, Geometry::Color::YELLOW);
+	Geometry::Cricle disk(3600, 500, 100, 5, Geometry::Color::ORANGE);
 	disk.info();
 	cout << delimiter << endl;
-	Geometry::EquilateralTriangle equilateral_triangle(5, 200, 300, 10, Geometry::Color::GREEN);
+	Geometry::EquilateralTriangle equilateral_triangle(150, 300, 50, 50, Geometry::Color::DARK_GREEN);
 	equilateral_triangle.info();
 	cout << delimiter << endl;
 
-	Geometry::IsoscalesTriangle isoscales_triangle(10, 5, 100, 50, 15, Geometry::Color::BLUE);
+	Geometry::IsoscelesTriangle isoscales_triangle(200, 10, 500, 200, 50, Geometry::Color::BLUE);
 	isoscales_triangle.info();
 	cout << delimiter << endl;
 	
