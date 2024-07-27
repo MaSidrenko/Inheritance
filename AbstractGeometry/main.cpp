@@ -2,6 +2,7 @@
 #include<Windows.h>
 #include<iostream>
 
+
 using std::cout;
 using std::cin;
 using std::endl;
@@ -244,11 +245,137 @@ namespace Geometry
 	public:
 		Triangle(SHAPE_TAKE_PARAMETERS): Shape(SHAPE_GIVE_PARAMETERS) {}
 		~Triangle() {}
-		virtual double get_heigth()const = 0;
+		virtual double get_heigth_triangle()const = 0;
 		void info()const override
 		{
-			cout << "Высота треугольника: " << get_heigth() << endl;
+			cout << "Высота треугольника: " << get_heigth_triangle() << endl;
 			Shape::info();
+		}
+	};
+	class EquilateralTriangle : public Triangle
+	{
+		double side_a;
+	public:
+		EquilateralTriangle(double side_a, SHAPE_TAKE_PARAMETERS) : Triangle(SHAPE_GIVE_PARAMETERS)
+		{
+			set_side_a(side_a);
+		}
+		~EquilateralTriangle() {}
+		void set_side_a(double side_a)
+		{
+			this->side_a = side_a;
+		}
+		double get_side_a()
+		{
+			return side_a;
+		}
+		double get_heigth_triangle()const override
+		{
+			return (side_a * sqrt(3)) / 2;
+		}
+		double get_area()const override
+		{
+			return 0.5 * side_a * get_heigth_triangle();
+		}
+		double get_perimeter()const override
+		{
+			return 3 * side_a;
+		}
+		void draw()const override 
+		{}
+		void info()const override
+		{
+			cout << typeid(*this).name() << endl;
+			cout << "Длинна сторон равностороннего треугольника: " << side_a << endl;
+			Triangle::info();
+		}
+	};
+	class IsoscalesTriangle : public Triangle
+	{
+		double side_a;
+		double side_b;
+	public:
+		IsoscalesTriangle(double side_a, double side_b, SHAPE_TAKE_PARAMETERS) : Triangle(SHAPE_GIVE_PARAMETERS)
+		{
+			set_side_a(side_a);
+			set_side_b(side_b);
+		}
+		~IsoscalesTriangle() {}
+		void set_side_a(double side_a)
+		{
+			this->side_a = side_a;
+		}
+		void set_side_b(double side_b)
+		{
+			this->side_b = side_b;
+		}
+		double get_side_a()
+		{
+			return side_a;
+		}
+		double get_side_b()
+		{
+			return side_b;
+		}
+		double get_heigth_triangle()const override
+		{
+			return sqrt((side_a * side_a) - (side_b * side_b) / 4);
+		}
+		double get_area()const override
+		{
+			return 0.5 * side_b * get_heigth_triangle();
+		}
+		double get_perimeter()const override
+		{
+			return 2 * side_a + side_b;
+		}
+		void draw()const override
+		{
+
+		}
+		void info()const override
+		{
+			cout << typeid(*this).name() << endl;
+			cout << "Длинна равных сторон равнобедреннго треугольника: " << side_a << endl;
+			cout << "Длинна основания равнобедренного теругольника: " << side_b << endl;
+			Triangle::info();
+		}
+	};
+	class RightTriangle : public Triangle
+	{
+		double side_a;
+		double side_b;
+		double side_c;
+	public:
+		RightTriangle(double side_a, double side_b, double side_c, SHAPE_TAKE_PARAMETERS) : Triangle(SHAPE_GIVE_PARAMETERS)
+		{
+			set_side_a(side_a);
+			set_side_b(side_b);
+			set_side_c(side_c);
+		}
+		void set_side_a(double side_a)
+		{
+			this->side_a = side_a;
+		}
+		void set_side_b(double side_b)
+		{
+			this->side_b = side_b;
+		}
+		void set_side_c(double side_c)
+		{
+			this->side_c = side_c;
+		}
+		double get_side_a()
+		{
+			return side_a;
+		}
+		double get_side_b()
+		{
+			return side_b;
+		}
+		double get_side_c()
+		{
+			return side_c;
 		}
 	};
 	class Cricle : public Shape
@@ -332,6 +459,13 @@ void main()
 	Geometry::Cricle disk(3600, 500, 100, 5, Geometry::Color::YELLOW);
 	disk.info();
 	cout << delimiter << endl;
+	Geometry::EquilateralTriangle equilateral_triangle(5, 200, 300, 10, Geometry::Color::GREEN);
+	equilateral_triangle.info();
+	cout << delimiter << endl;
 
+	Geometry::IsoscalesTriangle isoscales_triangle(10, 5, 100, 50, 15, Geometry::Color::BLUE);
+	isoscales_triangle.info();
+	cout << delimiter << endl;
+	
 	cout << "Количество фигур: " << disk.get_count() << endl;
 }
