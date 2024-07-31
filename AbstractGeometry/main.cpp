@@ -13,16 +13,16 @@ namespace Geometry
 {
 	enum Color
 	{
-		RED = 0x000000FF,
-		GREEN = 0x0000FF00,
-		DARK_GREEN = 0x0000AA00,
-		BLUE = 0x00FF0000,
-		YELLOW = 0x000000FF,
-		ORANGE = 0x000055FF,
-		CONSOLE_RED = 0xCC, //Страшая 'C' - цвет фона, младшая 'C' - цвет текста.
-		CONSOLE_GREEN = 0xAA,
-		CONSOLE_BLUE = 0x99,
-		CONSOLE_DEFAULT = 0x07
+		RED				= 0x000000FF,
+		GREEN			= 0x0000FF00,
+		DARK_GREEN		= 0x0000AA00,
+		BLUE			= 0x00FF0000,
+		YELLOW			= 0x0000FFFF,
+		ORANGE			= 0x000055FF,
+		CONSOLE_RED		= 0xCC, //Страшая 'C' - цвет фона, младшая 'C' - цвет текста.
+		CONSOLE_GREEN	= 0xAA,
+		CONSOLE_BLUE	= 0x99,
+		CONSOLE_DEFAULT	= 0x07
 	};
 #define SHAPE_TAKE_PARAMETERS unsigned int start_x, unsigned int start_y, unsigned int line_width, Color color
 #define SHAPE_GIVE_PARAMETERS start_x, start_y, line_width, color
@@ -42,11 +42,44 @@ namespace Geometry
 		static const int MIN_SIZE = 50;
 		static const int MAX_SIZE = 200;
 		static int count;
+		HWND hwnd = FindWindow(NULL, L"Inheritance - Microsoft Visual Studio");
+		HDC hdc = GetDC(hwnd);
+		HPEN hPen = CreatePen(PS_SOLID, line_width, color);		//hPen			- рисует контур фигуры;
+																//PS_SOLID		- сплошная линия
+																//line_width	- толщина линии в line_width пикселов
+		HBRUSH hBrush = CreateSolidBrush(color);				//hBrush		- рисует заливку фигуры(SolidBrush - это сплощной цвет)
 	public:
+		virtual void draw()const
+		{
+			//WinGDI - Windows Graphics Device Interface
+			//1. Получаем окно консоли:
+			//HWND hwnd = GetConsoleWindow(); // Ф-ция GetConsoleWindow() получает окно консоли
+			//2. Для того что бы рисовать, нужен контекст устроиства (Device Context), который есть у каждого окна 
+			//HWND hwnd = FindWindow(NULL, L"Inheritance - Microsoft Visual Studio");
+			//HDC hdc = GetDC(hwnd);// Констекст устройства можно получить при помощи ф-ции GetDC()
+			//Получаем контекст окна консоли
+			//Контекст устройства - это то, на чем мы будем рисовать.
+			
+			//3. Теперь нам нужно то, чем мы будем рисовать: 
+			//HPEN hPen = CreatePen(PS_SOLID, line_width, color);	//hPen			- рисует контур фигуры;
+			//													//PS_SOLID		- сплошная линия
+			//													//line_width	- толщина линии в line_width пикселов
+			//HBRUSH hBrush = CreateSolidBrush(color);			//hBrush		- рисует заливку фигуры(SolidBrush - это сплощной цвет)
+
+			//4. Выбираем чем, и на чем мы будем рисовать: 
+			SelectObject(hdc, hPen);
+			SelectObject(hdc, hBrush);
+
+
+			//6. hdc, hPen и hBrush занимают ресуры, и после того как мы ими воспользовались, ресурсы необходимо освободить
+			//DeleteObject(hPen);
+			//DeleteObject(hBrush);
+
+			//ReleaseDC(hwnd, hdc);
+		};
 		//Чисто-виртуальные ф-ции
 		virtual double get_area()const = 0;
 		virtual double get_perimeter()const = 0;
-		virtual void draw()const = 0;
 		///////////////////////////////////////////////////////////
 		Shape(SHAPE_TAKE_PARAMETERS) : color(color)
 		{
@@ -57,6 +90,9 @@ namespace Geometry
 		}
 		virtual ~Shape()
 		{
+			DeleteObject(hPen);
+			DeleteObject(hBrush); 
+			ReleaseDC(hwnd, hdc);
 			count--;
 		}
 
@@ -203,35 +239,28 @@ namespace Geometry
 		{
 			return 2 * (width + height);
 		}
-		void draw()const override
+		void draw()const
 		{
-			//WinGDI - Windows Graphics Device Interface
-			//1. Получаем окно консоли:
-			//HWND hwnd = GetConsoleWindow(); // Ф-ция GetConsoleWindow() получает окно консоли
-			//2. Для того что бы рисовать, нужен контекст устроиства (Device Context), который есть у каждого окна 
-			HWND hwnd = FindWindow(NULL, L"Inheritance - Microsoft Visual Studio");
-			// Констекст устройства можно получить при помощи ф-ции GetDC()
-			HDC hdc = GetDC(hwnd); //Получаем контекст окна консоли
-			//Контекст устройства - это то, на чем мы будем рисовать.
+			
+			/*	HWND hwnd = FindWindow(NULL, L"Inheritance - Microsoft Visual Studio");
+		
+			HDC hdc = GetDC(hwnd); 
 
-			//3. Теперь нам нужно то, чем мы будем рисовать: 
-			HPEN hPen = CreatePen(PS_SOLID, line_width, color); //hPen	  - рисует контур фигуры;
-			//PS_SOLID - сплошная линия
-			// 5		  - толщина линии 5 пикселов
-			HBRUSH hBrush = CreateSolidBrush(color);   //hBrush	  - рисует заливку фигуры(SolidBrush - это сплощной цвет)
+			
+			HPEN hPen = CreatePen(PS_SOLID, line_width, color); 
+			HBRUSH hBrush = CreateSolidBrush(color);   
 
-			//4. Выбираем чем, и на чем мы будем рисовать: 
+			
 			SelectObject(hdc, hPen);
-			SelectObject(hdc, hBrush);
-
+			SelectObject(hdc, hBrush);*/
+			Shape::draw();
 			//5. Рисуем фигуру: 
-			::Rectangle(hdc, start_x, start_y, start_x + width, start_y + height);		//:: - Global Scope (Глобальное пространство имен)
+			::Rectangle(hdc, start_x, start_y, start_x + width, start_y + height);//:: - Global Scope (Глобальное пространство имен)
 
-			//6. hdc, hPen и hBrush занимают ресуры, и после того как мы ими воспользовались, ресурсы необходимо освободить
-			DeleteObject(hBrush);
+			/*DeleteObject(hBrush);
 			DeleteObject(hPen);
 
-			ReleaseDC(hwnd, hdc);
+			ReleaseDC(hwnd, hdc);*/
 		}
 		void info()const override
 		{
@@ -254,6 +283,11 @@ namespace Geometry
 		Triangle(SHAPE_TAKE_PARAMETERS): Shape(SHAPE_GIVE_PARAMETERS) {}
 		~Triangle() {}
 		virtual double get_heigth_triangle()const = 0;
+		void draw(POINT vertices[])const
+		{
+			Shape::draw();
+			::Polygon(hdc, vertices, 3);
+		}
 		void info()const override
 		{
 			cout << "Высота треугольника: " << get_heigth_triangle() << endl;
@@ -269,9 +303,9 @@ namespace Geometry
 			set_side(side);
 		}
 		~EquilateralTriangle() {}
-		void set_side(double side_a)
+		void set_side(double side)
 		{
-			this->side = filter_size(side_a);
+			this->side = filter_size(side);
 		}
 		double get_side()
 		{
@@ -291,30 +325,16 @@ namespace Geometry
 		{
 			return 3 * side;
 		}
-		void draw()const override 
+		void draw()const
 		{
-			HWND hwnd = FindWindow(NULL, L"Inheritance - Microsoft Visual Studio");
-			HDC hdc = GetDC(hwnd);
-
-			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
-
-			SelectObject(hdc, hPen);
-			SelectObject(hdc, hBrush);
-
 			POINT vertices[] =
 			{
 				{start_x, start_y + side},
 				{start_x + side, start_y + side},
 				{start_x + side / 2, start_y + side - get_heigth_triangle()}
 			};
-
-			::Polygon(hdc, vertices, 3);
-
-			DeleteObject(hPen);
-			DeleteObject(hBrush);
-
-			ReleaseDC(hwnd, hdc);
+			Triangle::draw(vertices);
+		
 		}
 		void info()const override
 		{
@@ -364,16 +384,8 @@ namespace Geometry
 		{
 			return 2 * base + side;
 		}
-		void draw()const override
+		void draw()const 
 		{
-			HWND hwnd = FindWindow(NULL, L"Inheritance - Microsoft Visual Studio");
-			HDC hdc = GetDC(hwnd);
-
-			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
-
-			SelectObject(hdc, hPen);
-			SelectObject(hdc, hBrush);
 			
 			POINT vertices[] =
 			{
@@ -381,14 +393,7 @@ namespace Geometry
 				{start_x + base, start_y + side},
 				{start_x + base / 2, start_y + side - get_heigth_triangle()}
 			};
-
-			::Polygon(hdc, vertices, 3);
-
-			DeleteObject(hBrush);
-			DeleteObject(hPen);
-
-			ReleaseDC(hwnd, hdc);
-		
+			Triangle::draw(vertices);
 		}
 		void info()const override
 		{
@@ -400,39 +405,58 @@ namespace Geometry
 	};
 	class RightTriangle : public Triangle
 	{
-		double side_a;
-		double side_b;
-		double side_c;
+		double side;
+		double base;
 	public:
-		RightTriangle(double side_a, double side_b, double side_c, SHAPE_TAKE_PARAMETERS) : Triangle(SHAPE_GIVE_PARAMETERS)
+		RightTriangle(double side, double base, SHAPE_TAKE_PARAMETERS) : Triangle(SHAPE_GIVE_PARAMETERS)
 		{
-			set_side_a(side_a);
-			set_side_b(side_b);
-			set_side_c(side_c);
+			set_side(side);
+			set_base(base);
 		}
-		void set_side_a(double side_a)
+		void set_side(double side)
 		{
-			this->side_a = side_a;
+			this->side = filter_size(side);
 		}
-		void set_side_b(double side_b)
+		void set_base(double base)
 		{
-			this->side_b = side_b;
+			this->base = filter_size(base);
 		}
-		void set_side_c(double side_c)
+		double get_side()
 		{
-			this->side_c = side_c;
+			return side;
 		}
-		double get_side_a()
+		double get_base()
 		{
-			return side_a;
+			return base;
 		}
-		double get_side_b()
+		double get_heigth_triangle()const override
 		{
-			return side_b;
+			return sqrt(pow(side, 2) - (base / 2, 2));
 		}
-		double get_side_c()
+		double get_area()const override
 		{
-			return side_c;
+			return 0.5 * side * get_heigth_triangle();
+		}
+		double get_perimeter()const override
+		{
+			return side + base + get_heigth_triangle();
+		}
+		void draw()const
+		{
+			POINT vertices[] =
+			{
+				{start_x, start_y + get_heigth_triangle()},
+				{start_x + base, start_y},
+				{start_x + base, start_y + get_heigth_triangle()}
+			};
+			Triangle::draw(vertices);
+		}
+		void info()const override
+		{
+			cout << typeid(*this).name() << endl;
+			cout << "Основание Треугольника: " << base << endl;
+			cout << "Сторона треугольника: " << side << endl;
+			Triangle::info();
 		}
 	};
 	class Cricle : public Shape
@@ -464,24 +488,10 @@ namespace Geometry
 		{
 			return M_PI * get_diameter();
 		}
-		void draw()const override
+		void draw()const 
 		{
-			HWND hwnd = FindWindow(NULL, L"Inheritance - Microsoft Visual Studio");
-			HDC hdc = GetDC(hwnd);
-
-			HPEN hPen = CreatePen(PS_SOLID, line_width, color);
-			HBRUSH hBrush = CreateSolidBrush(color);
-
-			SelectObject(hdc, hPen);
-			SelectObject(hdc, hBrush);
-
+			Shape::draw();
 			::Ellipse(hdc, start_x, start_y, start_x + get_diameter(), start_y + get_diameter());
-
-			//Очищаем ресурсы: 
-			DeleteObject(hBrush);
-			DeleteObject(hPen);
-
-			ReleaseDC(hwnd, hdc);
 
 		}
 		void info()const override
@@ -501,18 +511,18 @@ void main()
 {
 	setlocale(LC_ALL, "");
 	Geometry::Square square(5000, 100, 100, 5, Geometry::Color::RED);
+	square.info();
 	//cout << "Длина стороны: " << square.get_side() << endl;
 	//cout << "Площадь квадрата: " << square.get_area() << endl;
 	//cout << "Периметр квадрата: " << square.get_perimeter() << endl;
 	//square.draw();
-	square.info();
 	cout << delimiter << endl;
-	Geometry::Rectangle rect(10000, 5000, 5000, 100, 100, Geometry::Color::BLUE);
+	Geometry::Rectangle rect(150, 5000, 5000, 100, 100, Geometry::Color::BLUE);
 	rect.info();
 	cout << delimiter << endl;
 	//Geometry::Triangle triangle(5, 5, 5, Geometry::Color::GREEN);
 	//triangle.info();
-	cout << delimiter << endl;
+	//cout << delimiter << endl;
 	Geometry::Cricle disk(3600, 500, 100, 5, Geometry::Color::ORANGE);
 	disk.info();
 	cout << delimiter << endl;
@@ -522,6 +532,10 @@ void main()
 
 	Geometry::IsoscelesTriangle isoscales_triangle(200, 10, 500, 200, 50, Geometry::Color::BLUE);
 	isoscales_triangle.info();
+	cout << delimiter << endl;
+	
+	Geometry::RightTriangle right_triangle(150, 300, 150, 200, 50, Geometry::Color::YELLOW);
+	right_triangle.info();
 	cout << delimiter << endl;
 	
 	cout << "Количество фигур: " << disk.get_count() << endl;
